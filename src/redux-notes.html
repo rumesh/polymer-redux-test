@@ -1,0 +1,136 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="./redux-notes-editor.html">
+<link rel="import" href="../reducers/notes-mixin.html">
+
+<dom-module id="redux-notes">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+      .note-list-item {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      paper-icon-button {
+        flex: 0 1 50px;
+        min-width: 50px;
+        padding: 5px;
+      }
+      paper-item-body {
+        flex: 1 1 0%;
+        text-overflow: ellipsis;
+      }
+      .delete {
+        color: var(--paper-red-500);
+        font-size: 1.2em;
+      }
+      .edit {
+        color: var(--paper-blue-900);
+        font-size: 1.2em;
+      }
+      .note-add {
+        width: 100%;
+      }
+      .note-edit {
+        display: block;
+        width: auto;
+        padding: 15px;
+        margin: 0px;
+      }
+    </style>
+    <template is="dom-repeat" items="[[notes]]">
+      <paper-item class="note-list-item" elevation="1">
+        <paper-icon-button icon="create" class="edit" item="[[item]]" on-tap="openEditorNote"></paper-icon-button>
+        <paper-icon-button icon="cancel" class="delete" item="[[item]]" on-tap="deleteNote"></paper-icon-button>
+        <paper-item-body two-line>
+          <div secondary>[[item.title]]</div>
+          <div><pre>[[item.content]]</pre></div>
+        </paper-item-body>
+      </paper-item>
+    </template>
+    <template is="dom-if" if="[[!notes.length]]" restamp="true">
+      <paper-item>Aucune note.</paper-item>
+    </template>
+    <br/>
+    <redux-notes-editor class="note-add" edition-type="ADD"></redux-notes-editor>
+    <paper-dialog class="note-edit" id="noteEditDialog" modal>
+      <h2>Edit Note</h2>
+      <redux-notes-editor id="noteEditor" edition-type="EDIT" note="[[editNote]]"></redux-notes-editor>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Close</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    class ReduxNotes extends ReduxNoteMixin(Polymer.Element) {
+      static get is() { return 'redux-notes'; }
+      static get properties() {
+        return {
+          notes: {
+            type: Array,
+            statePath: 'notes'
+          },
+          editNote: {
+            type: Object,
+            value: {}
+          }
+        };
+      }
+      static get actions() {
+        return {
+          addNote(message) {
+            return {
+              type: 'ADD_NOTE',
+              message
+            };
+          },
+          deleteNote(message) {
+            return {
+              type: 'DELETE_NOTE',
+              message
+            };
+          },
+          editNote(message) {
+            return {
+              type: 'EDIT_NOTE',
+              message
+            };
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        this.$.noteEditor.addEventListener('validate', (event) => {
+          this.editorValidated(event);
+        })
+      }
+
+      deleteNote(event) {
+        this.dispatch('deleteNote', Object.assign({}, event.currentTarget.item));
+      }
+
+      openEditorNote(event) {
+        this.editNote = event.currentTarget.item;
+        this.$.noteEditDialog.open();
+      }
+
+      editorValidated(event) {
+        this.$.noteEditDialog.close();
+      }
+    }
+
+    window.customElements.define(ReduxNotes.is, ReduxNotes);
+  </script>
+</dom-module>

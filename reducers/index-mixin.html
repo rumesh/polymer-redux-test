@@ -1,0 +1,24 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<script src="../node_modules/redux/dist/redux.js"></script>
+
+<script>
+  const initialState = {
+    name: 'World'
+  };
+
+  const indexReducer = (state, action) => {
+    if (!state) {
+      return initialState;
+    }
+
+    switch (action.type) {
+      case 'EDIT_NAME':
+        return Object.assign({}, state, {name: action.message});
+      default:
+        return state;
+    }
+  };
+
+  const indexStore = Redux.createStore(indexReducer);
+  ReduxIndexMixin = PolymerRedux(indexStore);
+</script>
