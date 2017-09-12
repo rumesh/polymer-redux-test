@@ -1,0 +1,65 @@
+<link rel="import" href="../bower_components/polymer-redux/polymer-redux.html">
+<script src="../node_modules/redux/dist/redux.js"></script>
+
+<script>
+  /**
+  * Generate Unique id
+  * from https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+  */
+  const guid = () => {
+    function s4() {
+      return Math.floor((1 + Math.random()) * 0x10000)
+        .toString(16)
+        .substring(1);
+    }
+    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+      s4() + '-' + s4() + s4() + s4();
+  };
+
+  /* Define initial state to always return the correct object, even when state is not defined (start of app)*/
+  const notesInitialState = {
+    notes: []
+  };
+
+  const notesReducer = (state, action) => {
+    if (!state) return notesInitialState;
+
+    let notes;
+    switch (action.type) {
+      case 'ADD_NOTE':
+        // make a copy, never modify state passed to the reducer
+        notes = state.notes.slice(0);
+        notes.push({
+          id: guid(),
+          title: action.message.title,
+          content: action.message.content
+        });
+        return Object.assign({}, state, {notes: notes});
+      case 'DELETE_NOTE':
+        notes = state.notes.slice(0);
+        let deletedIndex = notes.findIndex(element => {
+          return action.message.id === element.id;
+        });
+        if (deletedIndex !== -1)
+          notes.splice(deletedIndex, 1);
+        return Object.assign({}, state, {notes: notes});
+      case 'EDIT_NOTE':
+        notes = state.notes.slice(0);
+        let editedIndex = notes.findIndex(element => {
+          return action.message.id === element.id;
+        });
+        if (editedIndex !== -1)
+          notes[editedIndex] = {
+            id: action.message.id,
+            title: action.message.title,
+            content: action.message.content
+          };
+        return Object.assign({}, state, {notes: notes});
+      default:
+        return state;
+    }
+  };
+
+  const noteStore = Redux.createStore(notesReducer);
+  ReduxNoteMixin = PolymerRedux(noteStore);
+</script>

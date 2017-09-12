@@ -1,0 +1,105 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../reducers/notes-mixin.html">
+
+<dom-module id="redux-notes-editor">
+  <template>
+    <style>
+      :host {
+        display: block;
+        width: auto;
+      }
+      paper-card {
+        width: 100%;
+      }
+      .card-actions {
+        text-align: right;
+      }
+      paper-button {
+        color: --primary-color;
+      }
+    </style>
+    <paper-card>
+      <div class="card-content">
+        <paper-input label="Note Title" id="noteTitle" value="[[note.title]]"></paper-input>
+        <paper-textarea label="Note" id="noteText" rows="2" value="[[note.content]]"></paper-textarea>
+      </div>
+      <div class="card-actions">
+        <paper-button raised on-tap="validateAction">[[getActionName()]]</paper-button>
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+    class ReduxNotesEditor extends ReduxNoteMixin(Polymer.Element) {
+      static get is() { return 'redux-notes-editor'; }
+      static get properties() {
+        return {
+          note: {
+            type: Object,
+            value: {}
+          },
+          /* ADD/EDIT */
+          editionType: {
+            type: String
+          }
+        };
+      }
+      static get actions() {
+        return {
+          addNote(message) {
+            return {
+              type: 'ADD_NOTE',
+              message
+            };
+          },
+          editNote(message) {
+            return {
+              type: 'EDIT_NOTE',
+              message
+            };
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      getActionName() {
+        if (this.editionType === 'ADD') {
+          return 'Add';
+        } else if (this.editionType === 'EDIT') {
+          return 'Edit';
+        }
+      }
+
+      validateAction(event) {
+        event.stopPropagation();
+        let note = {
+          title: this.$.noteTitle.value,
+          content: this.$.noteText.value
+        };
+        if (!note.title || !note.content)
+          return false;
+
+        if (this.editionType === 'ADD') {
+          this.dispatch('addNote', note);
+        } else if (this.editionType === 'EDIT') {
+          note.id = this.note.id;
+          this.dispatch('editNote', note);
+        } else {
+          return false;
+        }
+        this.$.noteText.value = '';
+        this.$.noteTitle.value = '';
+        this.dispatchEvent(new CustomEvent('validate', {}));
+      }
+    }
+
+    window.customElements.define(ReduxNotesEditor.is, ReduxNotesEditor);
+  </script>
+</dom-module>

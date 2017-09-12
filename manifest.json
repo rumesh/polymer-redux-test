@@ -1,0 +1,7 @@
+{
+  "name": "polymer-redux-test",
+  "short_name": "polymer-redux-test",
+  "description": "redux test",
+  "start_url": "/",
+  "display": "standalone"
+}

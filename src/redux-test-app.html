@@ -1,0 +1,67 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="./redux-notes.html">
+<link rel="import" href="../reducers/index-mixin.html">
+
+<dom-module id="redux-test-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>
+      Hello [[name]]!&nbsp;<paper-icon-button icon="create" on-tap="openNameEdit"></paper-icon-button>
+    </h2>
+    <redux-notes></redux-notes>
+    <paper-dialog id="nameEditDialog" on-iron-overlay-closed="saveName" modal>
+      <h2>Edit Name</h2>
+      <paper-input id="editNameText" label="Name" value="[[name]]"></paper-input>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm autofocus>Save</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+    class ReduxTestApp extends ReduxIndexMixin(Polymer.Element) {
+      static get is() { return 'redux-test-app'; }
+      static get properties() {
+        return {
+          name: {
+            type: String,
+            statePath: 'name'
+          }
+        };
+      }
+      static get actions() {
+        return {
+          editName(message) {
+            return {
+              type: 'EDIT_NAME',
+              message
+            };
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+      }
+
+      openNameEdit(event) {
+        this.$.nameEditDialog.open();
+      }
+
+      saveName(event) {
+        if(event.detail.confirmed === true && this.$.editNameText.value !== '') {
+          this.dispatch('editName', this.$.editNameText.value);
+        }
+      }
+    }
+
+    window.customElements.define(ReduxTestApp.is, ReduxTestApp);
+  </script>
+</dom-module>
