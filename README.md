@@ -6,6 +6,14 @@ redux test
 
 First, make sure you have the [Polymer CLI](https://www.npmjs.com/package/polymer-cli) installed. Then run `polymer serve` to serve your application locally.
 
+## Install bower
+
+You need to have bower, to manage polymer dependencies `npm install -g bower` (https://www.npmjs.com/package/bower).
+
+## Install npm and bower dependencies
+
+Run `npm install && bower install`
+
 ## Viewing Your Application
 
 ```
