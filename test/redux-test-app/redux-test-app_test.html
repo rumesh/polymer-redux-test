@@ -21,30 +21,74 @@
 
     <test-fixture id="ChangedPropertyTestFixture">
       <template>
-        <redux-test-app prop1="new-prop1"></redux-test-app>
+        <redux-test-app></redux-test-app>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="AddNewNoteTestFixture">
+      <template>
+        <redux-test-app></redux-test-app>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="EditNoteTestFixture">
+      <template>
+        <redux-test-app></redux-test-app>
       </template>
     </test-fixture>
 
     <script>
       suite('redux-test-app', function() {
+        var note = {
+          'title': 'new note',
+          'content': 'My new note is awersome'
+        };
+
+        fillNote = (element, noteData = note) => {
+          var noteElement = element.shadowRoot.querySelector('redux-notes');
+          if (noteData.id) {
+            var noteEditor = noteElement.shadowRoot.querySelector('#noteEditor');
+          } else {
+            var noteEditor = noteElement.shadowRoot.querySelector('redux-notes-editor.note-add');
+          }
+          noteEditor.note = noteData;
+          var noteEditorShadowRoot = noteEditor.shadowRoot;
+          noteEditorShadowRoot.querySelector('paper-card .card-actions paper-button').click();
+        };
 
         test('instantiating the element with default properties works', function() {
           var element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'World');
+          assert.equal(element.name, 'World');
           var elementShadowRoot = element.shadowRoot;
           var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello redux-test-app!');
+          assert.equal(elementHeader.innerText, 'Hello World!');
         });
 
-        test('setting a property on the element works', function() {
+        test('adding a new note works', function() {
           // Create a test fixture
-          var element = fixture('ChangedPropertyTestFixture');
-          assert.equal(element.prop1, 'new-prop1');
-          var elementShadowRoot = element.shadowRoot;
-          var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
+          var element = fixture('AddNewNoteTestFixture');
+          fillNote(element);
+          // noteStore.dispatch({type: 'ADD_NOTE', message: note});
+          var noteElement = element.shadowRoot.querySelector('redux-notes');
+
+          assert.equal(noteElement.notes.length, 1);
+          assert.equal(noteElement.notes[0].title, note.title);
+          assert.equal(noteElement.notes[0].content, note.content);
         });
 
+        test('edit a new note works', function() {
+          // Create a test fixture
+          var element = fixture('EditNoteTestFixture');
+          var noteElement = element.shadowRoot.querySelector('redux-notes');
+          var currentNote = noteElement.notes[0];
+          currentNote.content = 'EDIT-' + currentNote.content;
+          currentNote.title = 'EDIT-' + currentNote.title;
+          fillNote(element, currentNote);
+
+          assert.equal(noteElement.notes.length, 1);
+          assert.equal(noteElement.notes[0].title, currentNote.title);
+          assert.equal(noteElement.notes[0].content, currentNote.content);
+        });
       });
     </script>
 
